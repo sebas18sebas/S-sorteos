@@ -223,19 +223,19 @@
         <h2>🏆 Premios a Sortear 🏆</h2>
         <div class="prizes-grid">
             <div class="prize-item">
-                <img src="moto.jpg" alt="1er Premio: Moto" class="prize-img">
-                <h3>1° Premio: Moto </h3>
+                <img src="img/moto.jpg" alt="1er Premio: Moto" class="prize-img">
+                <h3>1° Premio: Moto 110cc</h3>
             </div>
             <div class="prize-item">
-                <img src="tv.jpg" alt="2do Premio: TV" class="prize-img">
-                <h3>2° Premio: Smart TV 32"</h3>
+                <img src="img/tv.jpg" alt="2do Premio: TV" class="prize-img">
+                <h3>2° Premio: Smart TV 55"</h3>
             </div>
             <div class="prize-item">
-                <img src="cel.jpg" alt="3er Premio: Celular" class="prize-img">
-                <h3>3° Premio: Celular </h3>
+                <img src="img/cel.jpg" alt="3er Premio: Celular" class="prize-img">
+                <h3>3° Premio: Celular 0Km</h3>
             </div>
         </div>
-        <p><strong>Fecha del Sorteo:</strong> <span>10 de Enero, 21:00 hs</span></p>
+        <p><strong>Fecha del Sorteo:</strong> <span>30 de Diciembre, 21:00 hs</span></p>
     </div>
 
     <!-- SECCIÓN 1: FORMULARIO DE COMPRA -->
@@ -278,13 +278,16 @@
             <h2>2. Selecciona Cantidad de Números</h2>
             <div class="form-group">
                 <select id="ticketPack" required onchange="updateTotal()">
-                    <option value="2000">1 número — $2.000</option>
-                    <option value="3000">2 números — $3.000</option>
-                    <option value="5000">4 números — $5.000</option>
-                    <option value="7000">6 números — $7.000</option>
-                    <option value="10000">10 números — $10.000</option>
-                    <option value="15000">15 números — $15.000</option>
-                    <option value="19000">20 números — $19.000</option>
+                    <option value="1000">1 número — $1.000</option>
+                    <option value="1900">2 números — $1.900</option>
+                    <option value="2600">3 números — $2.600</option>
+                    <option value="2900">4 números — $2.900</option>
+                    <option value="3500">5 números — $3.500</option>
+                    <option value="3800">6 números — $3.800</option>
+                    <option value="4400">7 números — $4.400</option>
+                    <option value="4900">8 números — $4.900</option>
+                    <option value="5300">9 números — $5.300</option>
+                    <option value="5500">10 números — $5.500</option>
                 </select>
             </div>
 
@@ -293,7 +296,7 @@
                 <p><strong>CBU:</strong> 0000003100012345678901</p>
                 <p><strong>Alias:</strong> sorteos.mi.cuenta</p>
                 <p><strong>Titular:</strong> Tu Nombre / Razón Social</p>
-                <p><strong>Monto a pagar:</strong> <span id="totalPrice">$2.000</span></p>
+                <p><strong>Monto a pagar:</strong> <span id="totalPrice">$1.000</span></p>
             </div>
 
             <h2>4. Cargar Comprobante</h2>
@@ -330,7 +333,8 @@
 </div>
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzUdDkOfnfDFqE8zKUhCRYJigjpjFuSyZM5pZbDPCWIU51k_gJ58x46T4Qsblpivjhp/exec";
+    // URL DE TU APPS SCRIPT CONECTADA
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxZp3yVmY0vMscaXPUwg5OmIxkv8bc5VTJko98_p6-nZE5MZvJ5BhePEGSwSVVzhsz4/exec";
 
     function switchTab(tab) {
         if(tab === 'buy') {
@@ -356,60 +360,37 @@
         e.preventDefault();
         
         const btn = document.getElementById('btnSubmit');
-        const fileInput = document.getElementById('receipt');
-        
-        if (fileInput.files.length === 0) {
-            alert('❌ Por favor adjunta el comprobante de pago.');
-            return;
-        }
-
         btn.disabled = true;
-        btn.innerText = "Subiendo comprobante...";
+        btn.innerText = "Enviando registro...";
 
-        const file = fileInput.files[0];
-        const reader = new FileReader();
-
-        reader.onload = function(event) {
-            const base64String = event.target.result.split(',')[1];
-
-            const data = {
-                nombre: document.getElementById('firstname').value,
-                apellido: document.getElementById('lastname').value,
-                dni: document.getElementById('dni').value,
-                localidad: document.getElementById('location').value,
-                telefono: document.getElementById('phone').value,
-                email: document.getElementById('email').value,
-                monto: document.getElementById('totalPrice').innerText,
-                fileName: file.name,
-                fileType: file.type,
-                fileData: base64String
-            };
-
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify(data)
-            })
-            .then(res => res.json())
-            .then(response => {
-                btn.disabled = false;
-                btn.innerText = "Enviar Registro y Confirmar Pago";
-
-                if (response.status === 'success') {
-                    alert('✅ ¡Registro enviado con éxito! Tu comprobante fue subido y está siendo revisado.');
-                    document.getElementById('raffleForm').reset();
-                    switchTab('check');
-                } else {
-                    alert('❌ Hubo un error al registrar: ' + (response.message || 'Error desconocido'));
-                }
-            })
-            .catch(error => {
-                btn.disabled = false;
-                btn.innerText = "Enviar Registro y Confirmar Pago";
-                alert('❌ Error de conexión con el servidor.');
-            });
+        const data = {
+            nombre: document.getElementById('firstname').value,
+            apellido: document.getElementById('lastname').value,
+            dni: document.getElementById('dni').value,
+            localidad: document.getElementById('location').value,
+            telefono: document.getElementById('phone').value,
+            email: document.getElementById('email').value,
+            monto: document.getElementById('totalPrice').innerText
         };
 
-        reader.readAsDataURL(file);
+        fetch(SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(() => {
+            alert('✅ ¡Registro enviado con éxito! Tu pago está siendo revisado por el administrador. Puedes verificar tu estado ingresando tu DNI.');
+            document.getElementById('raffleForm').reset();
+            btn.disabled = false;
+            btn.innerText = "Enviar Registro y Confirmar Pago";
+            switchTab('check');
+        })
+        .catch(error => {
+            alert('❌ Ocurrió un error al enviar el registro. Por favor reintenta.');
+            btn.disabled = false;
+            btn.innerText = "Enviar Registro y Confirmar Pago";
+        });
     }
 
     function checkUserStatus() {
