@@ -330,7 +330,6 @@
 </div>
 
 <script>
-    // URL DE TU APPS SCRIPT CONECTADA
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzUdDkOfnfDFqE8zKUhCRYJigjpjFuSyZM5pZbDPCWIU51k_gJ58x46T4Qsblpivjhp/exec";
 
     function switchTab(tab) {
@@ -357,37 +356,60 @@
         e.preventDefault();
         
         const btn = document.getElementById('btnSubmit');
-        btn.disabled = true;
-        btn.innerText = "Enviando registro...";
+        const fileInput = document.getElementById('receipt');
+        
+        if (fileInput.files.length === 0) {
+            alert('❌ Por favor adjunta el comprobante de pago.');
+            return;
+        }
 
-        const data = {
-            nombre: document.getElementById('firstname').value,
-            apellido: document.getElementById('lastname').value,
-            dni: document.getElementById('dni').value,
-            localidad: document.getElementById('location').value,
-            telefono: document.getElementById('phone').value,
-            email: document.getElementById('email').value,
-            monto: document.getElementById('totalPrice').innerText
+        btn.disabled = true;
+        btn.innerText = "Subiendo comprobante...";
+
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function(event) {
+            const base64String = event.target.result.split(',')[1];
+
+            const data = {
+                nombre: document.getElementById('firstname').value,
+                apellido: document.getElementById('lastname').value,
+                dni: document.getElementById('dni').value,
+                localidad: document.getElementById('location').value,
+                telefono: document.getElementById('phone').value,
+                email: document.getElementById('email').value,
+                monto: document.getElementById('totalPrice').innerText,
+                fileName: file.name,
+                fileType: file.type,
+                fileData: base64String
+            };
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(response => {
+                btn.disabled = false;
+                btn.innerText = "Enviar Registro y Confirmar Pago";
+
+                if (response.status === 'success') {
+                    alert('✅ ¡Registro enviado con éxito! Tu comprobante fue subido y está siendo revisado.');
+                    document.getElementById('raffleForm').reset();
+                    switchTab('check');
+                } else {
+                    alert('❌ Hubo un error al registrar: ' + (response.message || 'Error desconocido'));
+                }
+            })
+            .catch(error => {
+                btn.disabled = false;
+                btn.innerText = "Enviar Registro y Confirmar Pago";
+                alert('❌ Error de conexión con el servidor.');
+            });
         };
 
-        fetch(SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        })
-        .then(() => {
-            alert('✅ ¡Registro enviado con éxito! Tu pago está siendo revisado por el administrador. Puedes verificar tu estado ingresando tu DNI.');
-            document.getElementById('raffleForm').reset();
-            btn.disabled = false;
-            btn.innerText = "Enviar Registro y Confirmar Pago";
-            switchTab('check');
-        })
-        .catch(error => {
-            alert('❌ Ocurrió un error al enviar el registro. Por favor reintenta.');
-            btn.disabled = false;
-            btn.innerText = "Enviar Registro y Confirmar Pago";
-        });
+        reader.readAsDataURL(file);
     }
 
     function checkUserStatus() {
