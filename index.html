@@ -393,29 +393,26 @@
 
             fetch(SCRIPT_URL, {
                 method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify(data)
             })
-            .then(() => {
-                alert('✅ ¡Registro y comprobante enviados con éxito! Tu pago está siendo revisado.');
-                document.getElementById('raffleForm').reset();
+            .then(res => res.json())
+            .then(response => {
+                if(response.status === 'success') {
+                    alert('✅ ¡Registro y comprobante enviados con éxito! Tu pago está siendo revisado.');
+                    document.getElementById('raffleForm').reset();
+                    switchTab('check');
+                } else {
+                    alert('❌ Error del servidor: ' + response.message);
+                }
                 btn.disabled = false;
                 btn.innerText = "Enviar Registro y Confirmar Pago";
-                switchTab('check');
             })
             .catch(error => {
-                alert('❌ Ocurrió un error al enviar el registro. Por favor reintenta.');
+                alert('❌ Ocurrió un error de conexión.');
                 btn.disabled = false;
                 btn.innerText = "Enviar Registro y Confirmar Pago";
             });
-        };
-
-        reader.onerror = function (error) {
-            alert('❌ Error al leer el archivo.');
-            btn.disabled = false;
-            btn.innerText = "Enviar Registro y Confirmar Pago";
-        };
     }
 
     function checkUserStatus() {
