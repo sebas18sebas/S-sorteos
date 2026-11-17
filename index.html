@@ -361,36 +361,61 @@
         
         const btn = document.getElementById('btnSubmit');
         btn.disabled = true;
-        btn.innerText = "Enviando registro...";
+        btn.innerText = "Subiendo comprobante...";
 
-        const data = {
-            nombre: document.getElementById('firstname').value,
-            apellido: document.getElementById('lastname').value,
-            dni: document.getElementById('dni').value,
-            localidad: document.getElementById('location').value,
-            telefono: document.getElementById('phone').value,
-            email: document.getElementById('email').value,
-            monto: document.getElementById('totalPrice').innerText
+        const fileInput = document.getElementById('receipt');
+        const file = fileInput.files[0];
+
+        if (!file) {
+            alert('Por favor adjunta el comprobante de pago.');
+            btn.disabled = false;
+            btn.innerText = "Enviar Registro y Confirmar Pago";
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = function () {
+            const base64Data = reader.result.split(',')[1];
+
+            const data = {
+                nombre: document.getElementById('firstname').value,
+                apellido: document.getElementById('lastname').value,
+                dni: document.getElementById('dni').value,
+                localidad: document.getElementById('location').value,
+                telefono: document.getElementById('phone').value,
+                email: document.getElementById('email').value,
+                monto: document.getElementById('totalPrice').innerText,
+                fileData: base64Data,
+                fileName: file.name,
+                mimeType: file.type
+            };
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(() => {
+                alert('✅ ¡Registro y comprobante enviados con éxito! Tu pago está siendo revisado.');
+                document.getElementById('raffleForm').reset();
+                btn.disabled = false;
+                btn.innerText = "Enviar Registro y Confirmar Pago";
+                switchTab('check');
+            })
+            .catch(error => {
+                alert('❌ Ocurrió un error al enviar el registro. Por favor reintenta.');
+                btn.disabled = false;
+                btn.innerText = "Enviar Registro y Confirmar Pago";
+            });
         };
 
-        fetch(SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        })
-        .then(() => {
-            alert('✅ ¡Registro enviado con éxito! Tu pago está siendo revisado por el administrador. Puedes verificar tu estado ingresando tu DNI.');
-            document.getElementById('raffleForm').reset();
+        reader.onerror = function (error) {
+            alert('❌ Error al leer el archivo.');
             btn.disabled = false;
             btn.innerText = "Enviar Registro y Confirmar Pago";
-            switchTab('check');
-        })
-        .catch(error => {
-            alert('❌ Ocurrió un error al enviar el registro. Por favor reintenta.');
-            btn.disabled = false;
-            btn.innerText = "Enviar Registro y Confirmar Pago";
-        });
+        };
     }
 
     function checkUserStatus() {
