@@ -459,28 +459,47 @@
         fetch(SCRIPT_URL)
         .then(res => res.json())
         .then(data => {
-            const userRecord = data.reverse().find(r => String(r.dni).trim() === dni);
+            // Busca TODAS las compras registradas con ese DNI
+            const userRecords = data.filter(r => String(r.dni).trim() === dni);
 
             resultBox.style.display = 'block';
 
-            if(userRecord) {
-                document.getElementById('resName').innerText = userRecord.nombre;
-                const status = userRecord.estado;
-                const badge = document.getElementById('resBadge');
-                badge.innerText = status;
+            if(userRecords.length > 0) {
+                document.getElementById('resName').innerText = userRecords[0].nombre;
 
-                if(status === 'APROBADO') {
+                const aprobados = userRecords.filter(r => r.estado === 'APROBADO');
+                const pendientes = userRecords.filter(r => r.estado === 'PENDIENTE');
+                const rechazados = userRecords.filter(r => r.estado === 'RECHAZADO');
+
+                const badge = document.getElementById('resBadge');
+
+                if(aprobados.length > 0) {
                     badge.className = "badge badge-approved";
-                    document.getElementById('resMsg').innerText = "¡Tu pago fue verificado correctamente!";
-                    document.getElementById('resTickets').innerText = userRecord.numeros;
-                } else if(status === 'RECHAZADO') {
-                    badge.className = "badge badge-rejected";
-                    document.getElementById('resMsg').innerText = "El pago fue rechazado. Si crees que es un error, contáctanos.";
-                    document.getElementById('resTickets').innerText = "Sin números asignados";
-                } else {
+                    badge.innerText = `APROBADO (${aprobados.length} ${aprobados.length === 1 ? 'compra' : 'compras'})`;
+
+                    // Junta todos los números de las compras aprobadas
+                    const todosLosNumeros = aprobados
+                        .map(r => r.numeros)
+                        .filter(n => n && n !== '-')
+                        .join(' , ');
+
+                    document.getElementById('resTickets').innerText = todosLosNumeros || "Sin números asignados";
+
+                    if(pendientes.length > 0) {
+                        document.getElementById('resMsg').innerText = `¡Tienes ${aprobados.length} compra(s) aprobada(s) y ${pendientes.length} pendiente(s) de verificación!`;
+                    } else {
+                        document.getElementById('resMsg').innerText = "¡Tus pagos fueron verificados correctamente!";
+                    }
+                } else if(pendientes.length > 0) {
                     badge.className = "badge badge-pending";
+                    badge.innerText = "PENDIENTE";
                     document.getElementById('resMsg').innerText = "Estamos verificando tu pago. Vuelve a consultar en unos minutos.";
                     document.getElementById('resTickets').innerText = "Pendiente de aprobación";
+                } else {
+                    badge.className = "badge badge-rejected";
+                    badge.innerText = "RECHAZADO";
+                    document.getElementById('resMsg').innerText = "El pago fue rechazado. Si crees que es un error, contáctanos.";
+                    document.getElementById('resTickets').innerText = "Sin números asignados";
                 }
             } else {
                 document.getElementById('resName').innerText = "No encontrado";
